@@ -1,14 +1,14 @@
 import React from 'react';
 import { withFirebase } from './Firebase';
-import Paper from './node_modules/@material-ui/core/Paper';
-import { makeStyles } from './node_modules/@material-ui/core/styles';
-import Grid from './node_modules/@material-ui/core/Grid';
-import Typography from './node_modules/@material-ui/core/Typography';
-import Box from './node_modules/@material-ui/core/Box';
-import Button from './node_modules/@material-ui/core/Button';
-import HowToReg from './node_modules/@material-ui/icons/HowToReg';
-import Register from './node_modules/@material-ui/icons/GroupAdd';
-import Assignment from './node_modules/@material-ui/icons/Assignment';
+import Paper from '@material-ui/core/Paper';
+import { makeStyles } from '@material-ui/core/styles';
+import Grid from '@material-ui/core/Grid';
+import Typography from '@material-ui/core/Typography';
+import Box from '@material-ui/core/Box';
+import Button from '@material-ui/core/Button';
+import HowToReg from '@material-ui/icons/HowToReg';
+import Register from '@material-ui/icons/GroupAdd';
+import Assignment from '@material-ui/icons/Assignment';
 import { compose } from 'recompose';
 import moment from 'moment';
 

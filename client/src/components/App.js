@@ -5,7 +5,7 @@ import LandingPage from './LandingPage';
 import LoginPage from './LoginPage.js';
 import AdminPage from './AdminPage';
 import AccountPage from './AccountPage';
-import { makeStyles } from './node_modules/@material-ui/core/styles';
+import { makeStyles } from '@material-ui/core/styles';
 import * as allRoutes from '../constants/routes';
 import { withAuthentication } from './Session';
 
