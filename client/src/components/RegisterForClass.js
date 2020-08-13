@@ -43,6 +43,7 @@ export default function RegisterForClass(props) {
     <Dialog
       open={props.open}
       onClose={onDialogClose}
+      onExited={onDialogClose}
       maxWidth='sm'
       aria-labelledby='form-dialog-title'
     >

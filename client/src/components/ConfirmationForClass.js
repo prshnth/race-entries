@@ -39,6 +39,7 @@ export default function ConfirmationForClass(props) {
     <Dialog
       open={props.open}
       onClose={onDialogClose}
+      onExited={onDialogClose}
       maxWidth='sm'
       aria-labelledby='form-dialog-title'
     >
@@ -63,8 +64,8 @@ export default function ConfirmationForClass(props) {
               <TableHead>
                 <TableRow>
                   <TableCell>Rider Name</TableCell>
-                  <TableCell align='right'>Horse Name</TableCell>
-                  <TableCell align='right'>Owner Name</TableCell>
+                  <TableCell>Horse Name</TableCell>
+                  <TableCell>Owner Name</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -73,8 +74,8 @@ export default function ConfirmationForClass(props) {
                     <TableCell component='th' scope='row'>
                       {participant.riderName}
                     </TableCell>
-                    <TableCell align='right'>{participant.horseName}</TableCell>
-                    <TableCell align='right'>{participant.ownerName}</TableCell>
+                    <TableCell>{participant.horseName}</TableCell>
+                    <TableCell>{participant.ownerName}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>
