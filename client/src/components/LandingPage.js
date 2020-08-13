@@ -1,5 +1,7 @@
 import React from 'react';
 import { withFirebase } from './Firebase';
+import RegisterForClass from './RegisterForClass';
+import ConfirmationForClass from './ConfirmationForClass';
 import Paper from '@material-ui/core/Paper';
 import { makeStyles } from '@material-ui/core/styles';
 import Grid from '@material-ui/core/Grid';
@@ -9,6 +11,7 @@ import Button from '@material-ui/core/Button';
 import HowToReg from '@material-ui/icons/HowToReg';
 import Register from '@material-ui/icons/GroupAdd';
 import Assignment from '@material-ui/icons/Assignment';
+import Snackbar from '@material-ui/core/Snackbar';
 import { compose } from 'recompose';
 import moment from 'moment';
 
@@ -39,6 +42,11 @@ const withStyles = (Component) => (props) => {
     button: {
       margin: '5px',
     },
+    successAlert: {
+      '& > div': {
+        background: theme.palette.success.dark,
+      },
+    },
   }));
   const classes = useStyles();
   return <Component {...props} classes={classes} />;
@@ -52,10 +60,16 @@ class LandingPage extends React.Component {
       shows: [],
       participants: [],
       loading: false,
+      registerDialogOpen: false,
+      confirmationDialogOpen: false,
+      selectedShow: null,
+      selectedClass: null,
+      registerSuccessAlertOpen: false,
+      error: null,
     };
   }
   componentDidMount() {
-    this.setState({ loading: true });
+    this.setState({ ...this.state, loading: true });
     this.participantsListener = this.props.firebase.db
       .collection('participants')
       .where('participationDate', '>=', moment().format('YYYY-MM-DD'))
@@ -63,14 +77,19 @@ class LandingPage extends React.Component {
         const participants = snapshot.docs.map((participant) =>
           participant.data()
         );
-        this.setState({ participants });
+        this.setState({ ...this.state, participants });
       });
     this.showsListener = this.props.firebase.db
       .collection('shows')
       .where('showDate', '>=', moment().format('YYYY-MM-DD'))
       .onSnapshot((snapshot) => {
-        const shows = snapshot.docs.map((show) => show.data());
-        this.setState({ shows, loading: true });
+        const shows = snapshot.docs.map((show) => {
+          return {
+            ...show.data(),
+            id: show.id,
+          };
+        });
+        this.setState({ ...this.state, shows, loading: true });
       });
   }
 
@@ -79,9 +98,74 @@ class LandingPage extends React.Component {
     this.showsListener();
   }
 
+  onDialogClose(openedDialogType) {
+    this.setState({
+      ...this.state,
+      [openedDialogType]: false,
+      selectedShow: null,
+      selectedClass: null,
+    });
+  }
+
+  handleSuccessAlertClose() {
+    this.setState({ ...this.state, registerSuccessAlertOpen: false });
+  }
+
+  onSubmitRegistration(participantInfo) {
+    this.props.firebase.db
+      .collection('participants')
+      .add({
+        ...participantInfo,
+        participationDate: this.state.selectedShow.showDate,
+        participatingShow: this.state.selectedShow.showName,
+        participationShowId: this.state.selectedShow.id,
+        participationClass: this.state.selectedClass.name,
+      })
+      .then(() => {
+        this.setState({
+          ...this.state,
+          registerDialogOpen: false,
+          registerSuccessAlertOpen: true,
+        });
+      })
+      .catch((error) => {
+        this.setState({
+          ...this.state,
+          error: error,
+        });
+      });
+  }
+
   render() {
     return this.state.shows && this.state.shows.length ? (
       <div className={this.props.classes.container}>
+        <RegisterForClass
+          open={this.state.registerDialogOpen}
+          handleRegisterDialogClose={() =>
+            this.onDialogClose('registerDialogOpen')
+          }
+          submitRegistration={(participantInfo) =>
+            this.onSubmitRegistration(participantInfo)
+          }
+        />
+        <ConfirmationForClass
+          handleConfirmationDialogClose={() =>
+            this.onDialogClose('confirmationDialogOpen')
+          }
+          participants={this.state.participants}
+          selectedShow={this.state.selectedShow}
+          selectedClass={this.state.selectedClass}
+          open={this.state.confirmationDialogOpen}
+        />
+        <Snackbar
+          anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+          autoHideDuration={2000}
+          open={this.state.registerSuccessAlertOpen}
+          onClose={() => this.handleSuccessAlertClose()}
+          message='Registration Successful!'
+          key='registrationSuccess'
+          className={this.props.classes.successAlert}
+        />
         {this.state.shows
           .sort((firstShow, secondShow) =>
             moment(firstShow.showDate).isBefore(secondShow.showDate) ? -1 : 1
@@ -121,6 +205,14 @@ class LandingPage extends React.Component {
                             size='small'
                             color='primary'
                             className={this.props.classes.button}
+                            onClick={() =>
+                              this.setState({
+                                ...this.state,
+                                registerDialogOpen: true,
+                                selectedShow: show,
+                                selectedClass: eachClass,
+                              })
+                            }
                             startIcon={<Register />}
                           >
                             Enroll
@@ -130,6 +222,14 @@ class LandingPage extends React.Component {
                             size='small'
                             color='primary'
                             className={this.props.classes.button}
+                            onClick={() =>
+                              this.setState({
+                                ...this.state,
+                                confirmationDialogOpen: true,
+                                selectedShow: show,
+                                selectedClass: eachClass,
+                              })
+                            }
                             startIcon={<HowToReg />}
                           >
                             Confirmed
