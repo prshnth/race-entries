@@ -11,6 +11,10 @@ import Divider from '@material-ui/core/Divider';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
+import ListItemIcon from '@material-ui/core/ListItemIcon';
+import RemoveShoppingCartIcon from '@material-ui/icons/RemoveShoppingCart';
+import SupervisorAccountIcon from '@material-ui/icons/SupervisorAccount';
+import ExitToAppIcon from '@material-ui/icons/ExitToApp';
 import { makeStyles } from '@material-ui/core/styles';
 import * as allRoutes from '../constants/routes';
 import { withFirebase } from './Firebase';
@@ -82,6 +86,13 @@ function Navigation({ firebase, history }) {
               className={classes.navBarLink}
             >
               <ListItem button color='inherit'>
+                <ListItemIcon>
+                  {route.text === 'Admin' ? (
+                    <SupervisorAccountIcon />
+                  ) : (
+                    <RemoveShoppingCartIcon />
+                  )}
+                </ListItemIcon>
                 <ListItemText primary={route.text} />
               </ListItem>
             </Link>
@@ -89,6 +100,7 @@ function Navigation({ firebase, history }) {
           <Divider />
           {authUser ? (
             <ListItem button color='inherit' key='logout' onClick={doLogout}>
+              <ListItemIcon>{<ExitToAppIcon />}</ListItemIcon>
               <ListItemText primary='Logout' />
             </ListItem>
           ) : (
@@ -98,6 +110,7 @@ function Navigation({ firebase, history }) {
               className={classes.navBarLink}
             >
               <ListItem button color='inherit'>
+                <ListItemIcon>{<ExitToAppIcon />}</ListItemIcon>
                 <ListItemText primary={allRoutes.LOGIN.text} />
               </ListItem>
             </Link>

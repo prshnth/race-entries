@@ -89,7 +89,7 @@ class LandingPage extends React.Component {
             id: show.id,
           };
         });
-        this.setState({ ...this.state, shows, loading: true });
+        this.setState({ ...this.state, shows, loading: false });
       });
   }
 
@@ -147,6 +147,7 @@ class LandingPage extends React.Component {
           submitRegistration={(participantInfo) =>
             this.onSubmitRegistration(participantInfo)
           }
+          selectedClass={this.state.selectedClass}
         />
         <ConfirmationForClass
           handleConfirmationDialogClose={() =>
@@ -184,8 +185,14 @@ class LandingPage extends React.Component {
                   'dddd, MMMM Do YYYY'
                 )}
               </Typography>
-              {show.classes
-                ? show.classes.map((eachClass, classIndex) => (
+              {show.classes &&
+              show.availableClasses &&
+              show.availableClasses.length ? (
+                show.classes
+                  .filter((listedClass) =>
+                    show.availableClasses.includes(listedClass.name)
+                  )
+                  .map((eachClass, classIndex) => (
                     <Paper
                       className={this.props.classes.paper}
                       elevation={6}
@@ -215,7 +222,7 @@ class LandingPage extends React.Component {
                             }
                             startIcon={<Register />}
                           >
-                            Enroll
+                            Enter
                           </Button>
                           <Button
                             variant='outlined'
@@ -247,7 +254,11 @@ class LandingPage extends React.Component {
                       </Grid>
                     </Paper>
                   ))
-                : null}
+              ) : (
+                <Typography noWrap variant='subtitle1' color='textSecondary'>
+                  There are no classes available for this Show.
+                </Typography>
+              )}
             </Box>
           ))}
       </div>

@@ -6,6 +6,7 @@ import LoginPage from './LoginPage.js';
 import AdminPage from './AdminPage';
 import AccountPage from './AccountPage';
 import { makeStyles } from '@material-ui/core/styles';
+import CssBaseline from '@material-ui/core/CssBaseline';
 import * as allRoutes from '../constants/routes';
 import { withAuthentication } from './Session';
 
@@ -20,6 +21,7 @@ const App = () => {
       display: 'flex',
       justifyContent: 'center',
       padding: theme.spacing(3),
+      backgroundColor: theme.palette.grey['50']
     },
   }));
   const classes = useStyles();
@@ -28,6 +30,7 @@ const App = () => {
       <Navigation />
       <div className={classes.toolbar} />
       <main className={classes.content}>
+        <CssBaseline />
         <Route exact path={allRoutes.HOME.path} component={LandingPage}></Route>
         <Route path={allRoutes.LOGIN.path} component={LoginPage}></Route>
         <Route

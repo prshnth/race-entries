@@ -88,23 +88,25 @@ export default function RegisterForClass(props) {
           value={state.riderName}
           onChange={updateField}
         />
-        <FormControl component='fieldset' margin='dense'>
-          <FormLabel component='legend'>Senior World Tour?</FormLabel>
-          <FormGroup aria-label='position' row>
-            <FormControlLabel
-              control={
-                <Checkbox
-                  checked={state.selectedSeniorWorldTour}
-                  onChange={updateField}
-                  color='primary'
-                  name='selectedSeniorWorldTour'
-                />
-              }
-              label='Yes'
-              labelPlacement='end'
-            />
-          </FormGroup>
-        </FormControl>
+        {props.selectedClass && props.selectedClass.hasSeniorWorldTour && (
+          <FormControl component='fieldset' margin='dense'>
+            <FormLabel component='legend'>Senior World Tour?</FormLabel>
+            <FormGroup aria-label='position' row>
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={state.selectedSeniorWorldTour}
+                    onChange={updateField}
+                    color='primary'
+                    name='selectedSeniorWorldTour'
+                  />
+                }
+                label='Yes'
+                labelPlacement='end'
+              />
+            </FormGroup>
+          </FormControl>
+        )}
       </DialogContent>
       <DialogActions>
         <Button
