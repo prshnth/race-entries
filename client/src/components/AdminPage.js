@@ -177,11 +177,12 @@ class AdminPage extends React.Component {
   }
 
   onSubmitCreateNewShow(showInfo) {
-    showInfo.availableClasses = _.map(showInfo.classes, 'name');
-    showInfo.showDate = moment(showInfo.showDate).format('YYYY-MM-DD');
+    let newShow = {...showInfo};
+    newShow.availableClasses = _.map(showInfo.classes, 'name');
+    newShow.showDate = moment(showInfo.showDate).format('YYYY-MM-DD');
     this.props.firebase.db
       .collection('shows')
-      .add(showInfo)
+      .add(newShow)
       .then(() => {
         this.setState({
           ...this.state,

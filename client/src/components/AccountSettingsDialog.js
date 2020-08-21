@@ -130,7 +130,7 @@ export default function AccountSettingsDialog({
               className={classes.passwordButton}
               disabled={state.password === ''}
             >
-              Reset Password
+              Reset
             </Button>
           </Box>
 
