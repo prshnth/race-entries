@@ -53,6 +53,7 @@ export default function AccountSettingsDialog({
           showSuccessAlertOpen: true,
           successMessage: 'Password Reset Successful!',
         });
+        handleAccountSettingsDialogClose();
       })
       .catch((error) => {
         setState({ ...state, error: error.message });
@@ -69,6 +70,7 @@ export default function AccountSettingsDialog({
           showSuccessAlertOpen: true,
           successMessage: 'Email sent!',
         });
+        handleAccountSettingsDialogClose();
       })
       .catch((error) => {
         setState({ ...state, error: error.message });
