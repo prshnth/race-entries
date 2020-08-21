@@ -59,7 +59,7 @@ const withStyles = (Component) => (props) => {
   return <Component {...props} classes={classes} />;
 };
 
-const ShowList = ({ show, classes, firebase }) => {
+const ShowList = ({ show, classes, firebase, isPrevious }) => {
   const setClassState = (show, selectedClass) => {
     const operationType = _.includes(show.availableClasses, selectedClass.name)
       ? 'Remove'
@@ -99,24 +99,26 @@ const ShowList = ({ show, classes, firebase }) => {
                   >
                     Draw
                   </Button>
-                  <Button
-                    variant='outlined'
-                    color='primary'
-                    size='small'
-                    className={classes.button}
-                    onClick={() => setClassState(show, eachClass)}
-                    startIcon={
-                      _.includes(show.availableClasses, eachClass.name) ? (
-                        <PanToolIcon />
-                      ) : (
-                        <PlayArrowIcon />
-                      )
-                    }
-                  >
-                    {_.includes(show.availableClasses, eachClass.name)
-                      ? 'Stop'
-                      : 'Start'}
-                  </Button>
+                  {!isPrevious && (
+                    <Button
+                      variant='outlined'
+                      color='primary'
+                      size='small'
+                      className={classes.button}
+                      onClick={() => setClassState(show, eachClass)}
+                      startIcon={
+                        _.includes(show.availableClasses, eachClass.name) ? (
+                          <PanToolIcon />
+                        ) : (
+                          <PlayArrowIcon />
+                        )
+                      }
+                    >
+                      {_.includes(show.availableClasses, eachClass.name)
+                        ? 'Stop'
+                        : 'Start'}
+                    </Button>
+                  )}
                 </Grid>
               </Grid>
             </Paper>
@@ -169,6 +171,7 @@ class AdminPage extends React.Component {
   onDialogClose(openedDialogType) {
     this.setState({
       ...this.state,
+      error: '',
       [openedDialogType]: false,
     });
   }
@@ -310,6 +313,7 @@ class AdminPage extends React.Component {
             <ShowList
               show={show}
               key={index}
+              isPrevious={true}
               classes={this.props.classes}
               firebase={this.props.firebase}
             />
