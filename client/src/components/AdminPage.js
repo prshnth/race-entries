@@ -19,6 +19,7 @@ import PanToolIcon from '@material-ui/icons/PanTool';
 import PlayArrowIcon from '@material-ui/icons/PlayArrow';
 import { compose } from 'recompose';
 import CreateShowDialog from './CreateShowDialog';
+import AccountSettingsDialog from './AccountSettingsDialog';
 import _ from 'lodash';
 
 const withStyles = (Component) => (props) => {
@@ -134,6 +135,7 @@ class AdminPage extends React.Component {
       participants: [],
       createShowDialogOpen: false,
       showSuccessAlertOpen: false,
+      accountSettingsDialog: false,
     };
   }
   componentDidMount() {
@@ -187,7 +189,7 @@ class AdminPage extends React.Component {
       .catch((error) => {
         this.setState({
           ...this.state,
-          error: error,
+          error: error.message,
         });
       });
   }
@@ -225,6 +227,23 @@ class AdminPage extends React.Component {
     const previousShows = this.getPreviousShows();
     return (
       <Container className={this.props.classes.container}>
+        <CreateShowDialog
+          open={this.state.createShowDialogOpen}
+          handleCreateShowDialogClose={() =>
+            this.onDialogClose('createShowDialogOpen')
+          }
+          onCreateShowSubmit={(showInfo) =>
+            this.onSubmitCreateNewShow(showInfo)
+          }
+          error={this.state.error}
+        />
+        <AccountSettingsDialog
+          open={this.state.accountSettingsDialog}
+          handleAccountSettingsDialogClose={() =>
+            this.onDialogClose('accountSettingsDialog')
+          }
+          firebase={this.props.firebase}
+        />
         <Snackbar
           anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
           autoHideDuration={2000}
@@ -256,19 +275,16 @@ class AdminPage extends React.Component {
           variant='extended'
           color='primary'
           aria-label='add'
+          onClick={() =>
+            this.setState({
+              ...this.state,
+              accountSettingsDialog: true,
+            })
+          }
         >
           <SettingsIcon />
           Account Settings
         </Fab>
-        <CreateShowDialog
-          open={this.state.createShowDialogOpen}
-          handleCreateShowDialogClose={() =>
-            this.onDialogClose('createShowDialogOpen')
-          }
-          onCreateShowSubmit={(showInfo) =>
-            this.onSubmitCreateNewShow(showInfo)
-          }
-        />
         <Typography noWrap variant='h5' color='primary'>
           Available Shows
         </Typography>
@@ -299,7 +315,12 @@ class AdminPage extends React.Component {
             />
           ))
         ) : (
-          <Typography noWrap variant='h6' display='inline' color='primary'>
+          <Typography
+            noWrap
+            variant='subtitle1'
+            display='inline'
+            color='textSecondary'
+          >
             There are no past shows available.
           </Typography>
         )}

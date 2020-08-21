@@ -1,6 +1,7 @@
 import React from 'react';
 import { makeStyles } from '@material-ui/core/styles';
 import Box from '@material-ui/core/Box';
+import Typography from '@material-ui/core/Typography';
 import Button from '@material-ui/core/Button';
 import TextField from '@material-ui/core/TextField';
 import Dialog from '@material-ui/core/Dialog';
@@ -91,6 +92,11 @@ export default function CreateShowDialog(props) {
       <DialogTitle id='form-dialog-title'>Create a New Show</DialogTitle>
       <DialogContent>
         <DialogContentText>Please fill out below information</DialogContentText>
+        {props.error && (
+          <Typography variant='subtitle1' display='inline' color='error'>
+            {props.error}
+          </Typography>
+        )}
         <TextField
           autoFocus
           required
