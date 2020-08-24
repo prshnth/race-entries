@@ -6,6 +6,7 @@ import Paper from '@material-ui/core/Paper';
 import { makeStyles } from '@material-ui/core/styles';
 import Grid from '@material-ui/core/Grid';
 import Typography from '@material-ui/core/Typography';
+import CircularProgress from '@material-ui/core/CircularProgress';
 import Box from '@material-ui/core/Box';
 import Button from '@material-ui/core/Button';
 import HowToReg from '@material-ui/icons/HowToReg';
@@ -141,6 +142,7 @@ class LandingPage extends React.Component {
   }
 
   render() {
+    if (this.state.loading) return <CircularProgress />;
     return this.state.shows && this.state.shows.length ? (
       <div className={this.props.classes.container}>
         <RegisterForClass

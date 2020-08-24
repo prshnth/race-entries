@@ -4,6 +4,7 @@ import { withAuthorization } from './Session';
 import { LOGIN as loginRoute } from '../constants/routes';
 import moment from 'moment';
 import Fab from '@material-ui/core/Fab';
+import CircularProgress from '@material-ui/core/CircularProgress';
 import AddIcon from '@material-ui/icons/Add';
 import Container from '@material-ui/core/Container';
 import Typography from '@material-ui/core/Typography';
@@ -236,6 +237,7 @@ class AdminPage extends React.Component {
   render() {
     const availableShows = this.getAvailableShows();
     const previousShows = this.getPreviousShows();
+    if (this.state.loading) return <CircularProgress />;
     return (
       <Container className={this.props.classes.container}>
         <CreateShowDialog
