@@ -66,6 +66,7 @@ class LandingPage extends React.Component {
       selectedClass: null,
       registerSuccessAlertOpen: false,
       error: null,
+      isRegistering: false,
     };
   }
   componentDidMount() {
@@ -112,6 +113,7 @@ class LandingPage extends React.Component {
   }
 
   onSubmitRegistration(participantInfo) {
+    this.setState({ ...this.state, isRegistering: true });
     this.props.firebase.db
       .collection('participants')
       .add({
@@ -125,6 +127,7 @@ class LandingPage extends React.Component {
         this.setState({
           ...this.state,
           registerDialogOpen: false,
+          isRegistering: false,
           registerSuccessAlertOpen: true,
         });
       })
@@ -132,6 +135,7 @@ class LandingPage extends React.Component {
         this.setState({
           ...this.state,
           error: error,
+          isRegistering: false,
         });
       });
   }
@@ -148,6 +152,7 @@ class LandingPage extends React.Component {
             this.onSubmitRegistration(participantInfo)
           }
           selectedClass={this.state.selectedClass}
+          isRegistering={this.state.isRegistering}
         />
         <ConfirmationForClass
           handleConfirmationDialogClose={() =>

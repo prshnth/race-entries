@@ -138,6 +138,7 @@ class AdminPage extends React.Component {
       createShowDialogOpen: false,
       showSuccessAlertOpen: false,
       accountSettingsDialog: false,
+      isShowCreating: false,
     };
   }
   componentDidMount() {
@@ -177,9 +178,13 @@ class AdminPage extends React.Component {
   }
 
   onSubmitCreateNewShow(showInfo) {
-    let newShow = {...showInfo};
+    let newShow = { ...showInfo };
     newShow.availableClasses = _.map(showInfo.classes, 'name');
     newShow.showDate = moment(showInfo.showDate).format('YYYY-MM-DD');
+    this.setState({
+      ...this.state,
+      isShowCreating: true,
+    });
     this.props.firebase.db
       .collection('shows')
       .add(newShow)
@@ -187,12 +192,14 @@ class AdminPage extends React.Component {
         this.setState({
           ...this.state,
           createShowDialogOpen: false,
+          isShowCreating: false,
           showSuccessAlertOpen: true,
         });
       })
       .catch((error) => {
         this.setState({
           ...this.state,
+          isShowCreating: false,
           error: error.message,
         });
       });
@@ -240,6 +247,7 @@ class AdminPage extends React.Component {
             this.onSubmitCreateNewShow(showInfo)
           }
           error={this.state.error}
+          isShowCreating={this.state.isShowCreating}
         />
         <AccountSettingsDialog
           open={this.state.accountSettingsDialog}

@@ -17,6 +17,7 @@ import FormGroup from '@material-ui/core/FormGroup';
 import FormLabel from '@material-ui/core/FormLabel';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
 import Checkbox from '@material-ui/core/Checkbox';
+import CircularProgress from '@material-ui/core/CircularProgress';
 import DateFnsUtils from '@date-io/date-fns';
 import {
   MuiPickersUtilsProvider,
@@ -29,6 +30,18 @@ export default function CreateShowDialog(props) {
     classBox: {
       padding: theme.spacing(1, 2),
       margin: theme.spacing(1, 0),
+    },
+    wrapper: {
+      margin: theme.spacing(1),
+      position: 'relative',
+    },
+    buttonProgress: {
+      color: theme.palette.success.light,
+      position: 'absolute',
+      top: '50%',
+      left: '50%',
+      marginTop: -12,
+      marginLeft: -12,
     },
   }));
 
@@ -204,15 +217,20 @@ export default function CreateShowDialog(props) {
         >
           Cancel
         </Button>
-        <Button
-          variant='contained'
-          size='small'
-          onClick={() => props.onCreateShowSubmit(state)}
-          color='primary'
-          disabled={isFormInvalid}
-        >
-          Submit
-        </Button>
+        <div className={classes.wrapper}>
+          <Button
+            variant='contained'
+            size='small'
+            onClick={() => props.onCreateShowSubmit(state)}
+            color='primary'
+            disabled={isFormInvalid || props.isShowCreating}
+          >
+            Submit
+          </Button>
+          {props.isShowCreating && (
+            <CircularProgress size={24} className={classes.buttonProgress} />
+          )}
+        </div>
       </DialogActions>
     </Dialog>
   );
