@@ -161,7 +161,7 @@ export default function ConfirmationForClass(props) {
             >
               <TableHead>
                 <TableRow>
-                  {(props.isAdmin || _.size(props.selectedShow.draw)) && (
+                  {(props.isAdmin || !!_.size(props.selectedShow.draw)) && (
                     <TableCell>Order</TableCell>
                   )}
                   <TableCell>Rider Name</TableCell>
@@ -182,7 +182,7 @@ export default function ConfirmationForClass(props) {
                           }
                         />
                       </TableCell>
-                    ) : _.size(props.selectedShow.draw) ? (
+                    ) : !!_.size(props.selectedShow.draw) ? (
                       <TableCell>
                         {props.selectedShow.draw[participant.id]}
                       </TableCell>
