@@ -53,6 +53,7 @@ export default function CreateShowDialog(props) {
       totalClasses: 1,
       classes: [{ name: '', hasSeniorWorldTour: false }],
       availableClasses: [],
+      draw: {},
     };
   };
 
@@ -103,7 +104,7 @@ export default function CreateShowDialog(props) {
       aria-labelledby='form-dialog-title'
     >
       <DialogTitle id='form-dialog-title'>Create a New Show</DialogTitle>
-      <DialogContent>
+      <DialogContent dividers>
         <DialogContentText>Please fill out below information</DialogContentText>
         {props.error && (
           <Typography variant='subtitle1' display='inline' color='error'>

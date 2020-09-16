@@ -67,7 +67,7 @@ export default function RegisterForClass(props) {
       aria-labelledby='form-dialog-title'
     >
       <DialogTitle id='form-dialog-title'>Register for a Class</DialogTitle>
-      <DialogContent>
+      <DialogContent dividers>
         <DialogContentText>Please fill out below information</DialogContentText>
         <TextField
           autoFocus

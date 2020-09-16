@@ -15,6 +15,7 @@ import Assignment from '@material-ui/icons/Assignment';
 import Snackbar from '@material-ui/core/Snackbar';
 import { compose } from 'recompose';
 import moment from 'moment';
+import _ from 'lodash';
 
 const withStyles = (Component) => (props) => {
   const useStyles = makeStyles((theme) => ({
@@ -76,9 +77,12 @@ class LandingPage extends React.Component {
       .collection('participants')
       .where('participationDate', '>=', moment().format('YYYY-MM-DD'))
       .onSnapshot((snapshot) => {
-        const participants = snapshot.docs.map((participant) =>
-          participant.data()
-        );
+        const participants = snapshot.docs.map((participant) => {
+          return {
+            ...participant.data(),
+            id: participant.id,
+          };
+        });
         this.setState({ ...this.state, participants });
       });
     this.showsListener = this.props.firebase.db
@@ -244,18 +248,11 @@ class LandingPage extends React.Component {
                                 selectedClass: eachClass,
                               })
                             }
-                            startIcon={<HowToReg />}
+                            startIcon={
+                              _.size(show.draw) ? <Assignment /> : <HowToReg />
+                            }
                           >
-                            Confirmed
-                          </Button>
-                          <Button
-                            variant='outlined'
-                            color='primary'
-                            size='small'
-                            className={this.props.classes.button}
-                            startIcon={<Assignment />}
-                          >
-                            Draw
+                            {_.size(show.draw) ? 'Draw' : 'Confirmed'}
                           </Button>
                         </Grid>
                       </Grid>

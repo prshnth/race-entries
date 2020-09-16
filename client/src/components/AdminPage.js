@@ -21,6 +21,7 @@ import PlayArrowIcon from '@material-ui/icons/PlayArrow';
 import { compose } from 'recompose';
 import CreateShowDialog from './CreateShowDialog';
 import AccountSettingsDialog from './AccountSettingsDialog';
+import ConfirmationForClass from './ConfirmationForClass';
 import _ from 'lodash';
 
 const withStyles = (Component) => (props) => {
@@ -60,7 +61,13 @@ const withStyles = (Component) => (props) => {
   return <Component {...props} classes={classes} />;
 };
 
-const ShowList = ({ show, classes, firebase, isPrevious }) => {
+const ShowList = ({
+  show,
+  classes,
+  firebase,
+  isPrevious,
+  setSelectedClassState,
+}) => {
   const setClassState = (show, selectedClass) => {
     const operationType = _.includes(show.availableClasses, selectedClass.name)
       ? 'Remove'
@@ -97,6 +104,7 @@ const ShowList = ({ show, classes, firebase, isPrevious }) => {
                     size='small'
                     className={classes.button}
                     startIcon={<Assignment />}
+                    onClick={() => setSelectedClassState(show, eachClass)}
                   >
                     Draw
                   </Button>
@@ -140,6 +148,11 @@ class AdminPage extends React.Component {
       showSuccessAlertOpen: false,
       accountSettingsDialog: false,
       isShowCreating: false,
+      drawDialogOpen: false,
+      selectedShow: null,
+      selectedClass: null,
+      isSortLoading: false,
+      successToastMessage: '',
     };
   }
   componentDidMount() {
@@ -147,9 +160,12 @@ class AdminPage extends React.Component {
     this.participantsListener = this.props.firebase.db
       .collection('participants')
       .onSnapshot((snapshot) => {
-        const participants = snapshot.docs.map((participant) =>
-          participant.data()
-        );
+        const participants = snapshot.docs.map((participant) => {
+          return {
+            ...participant.data(),
+            id: participant.id,
+          };
+        });
         this.setState({ ...this.state, participants });
       });
     this.showsListener = this.props.firebase.db
@@ -175,6 +191,8 @@ class AdminPage extends React.Component {
       ...this.state,
       error: '',
       [openedDialogType]: false,
+      selectedShow: null,
+      selectedClass: null,
     });
   }
 
@@ -195,6 +213,7 @@ class AdminPage extends React.Component {
           createShowDialogOpen: false,
           isShowCreating: false,
           showSuccessAlertOpen: true,
+          successToastMessage: 'New Show Created!',
         });
       })
       .catch((error) => {
@@ -234,6 +253,57 @@ class AdminPage extends React.Component {
     this.setState({ ...this.state, showSuccessAlertOpen: false });
   }
 
+  setSelectedClassState(show, eachClass) {
+    this.setState({
+      ...this.state,
+      participants: _.sortBy(
+        this.state.participants,
+        (participant) => show.draw[participant.id]
+      ),
+      drawDialogOpen: true,
+      selectedShow: show,
+      selectedClass: eachClass,
+    });
+  }
+
+  setDrawOrder(order, participantId) {
+    this.setState({
+      ...this.state,
+      selectedShow: {
+        ...this.state.selectedShow,
+        draw: { ...this.state.selectedShow.draw, [participantId]: order },
+      },
+    });
+  }
+
+  sortList() {
+    const { selectedShow } = this.state;
+    const showRef = this.props.firebase.db
+      .collection('shows')
+      .doc(selectedShow.id);
+    this.setState({
+      ...this.state,
+      isSortLoading: true,
+      showSuccessAlertOpen: true,
+    });
+    showRef
+      .update({ draw: selectedShow.draw })
+      .then(() => {
+        this.setState({
+          ...this.state,
+          participants: _.sortBy(
+            this.state.participants,
+            (participant) => this.state.selectedShow.draw[participant.id]
+          ),
+          drawDialogOpen: false,
+          successToastMessage: 'Draw submitted successfully!',
+        });
+      })
+      .finally(() => {
+        this.setState({ isSortLoading: false });
+      });
+  }
+
   render() {
     const availableShows = this.getAvailableShows();
     const previousShows = this.getPreviousShows();
@@ -258,12 +328,25 @@ class AdminPage extends React.Component {
           }
           firebase={this.props.firebase}
         />
+        <ConfirmationForClass
+          handleConfirmationDialogClose={() =>
+            this.onDialogClose('drawDialogOpen')
+          }
+          participants={this.state.participants}
+          selectedShow={this.state.selectedShow}
+          selectedClass={this.state.selectedClass}
+          open={this.state.drawDialogOpen}
+          isAdmin={true}
+          isSortLoading={this.state.isSortLoading}
+          setOrder={(order, id) => this.setDrawOrder(order, id)}
+          onSortClick={() => this.sortList()}
+        />
         <Snackbar
           anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
           autoHideDuration={2000}
           open={this.state.showSuccessAlertOpen}
           onClose={() => this.handleSuccessAlertClose()}
-          message='New Show Created!'
+          message={this.state.successToastMessage}
           key='showCreationSuccess'
           className={this.props.classes.successAlert}
         />
@@ -309,6 +392,9 @@ class AdminPage extends React.Component {
               key={index}
               classes={this.props.classes}
               firebase={this.props.firebase}
+              setSelectedClassState={(selectedShow, selectedClass) =>
+                this.setSelectedClassState(selectedShow, selectedClass)
+              }
             />
           ))
         ) : (
@@ -327,6 +413,9 @@ class AdminPage extends React.Component {
               isPrevious={true}
               classes={this.props.classes}
               firebase={this.props.firebase}
+              setSelectedClassState={(selectedShow, selectedClass) =>
+                this.setSelectedClassState(selectedShow, selectedClass)
+              }
             />
           ))
         ) : (

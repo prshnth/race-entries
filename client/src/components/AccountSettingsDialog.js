@@ -102,7 +102,7 @@ export default function AccountSettingsDialog({
         aria-labelledby='form-dialog-title'
       >
         <DialogTitle id='form-dialog-title'>Account Settings</DialogTitle>
-        <DialogContent>
+        <DialogContent dividers>
           {state.error && (
             <Typography variant='subtitle1' display='inline' color='error'>
               {state.error}
