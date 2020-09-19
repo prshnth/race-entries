@@ -24,6 +24,7 @@ import {
   KeyboardDatePicker,
 } from '@material-ui/pickers';
 import _ from 'lodash';
+import { v4 as uuidv4 } from 'uuid';
 
 export default function CreateShowDialog(props) {
   const useStyles = makeStyles((theme) => ({
@@ -51,7 +52,7 @@ export default function CreateShowDialog(props) {
       showName: '',
       showDate: new Date(),
       totalClasses: 1,
-      classes: [{ name: '', hasSeniorWorldTour: false }],
+      classes: [{ name: '', id: null, hasSeniorWorldTour: false }],
       availableClasses: [],
       draw: {},
     };
@@ -64,10 +65,11 @@ export default function CreateShowDialog(props) {
 
   const [state, setState] = React.useState(initialState());
   const updateClassesCount = (e) => {
-    const initClasses = _.times(
-      e.target.value,
-      _.constant({ name: '', hasSeniorWorldTour: false })
-    );
+    const initClasses = _.times(e.target.value, () => ({
+      name: '',
+      id: uuidv4(),
+      hasSeniorWorldTour: false,
+    }));
     setState({ ...state, totalClasses: e.target.value, classes: initClasses });
   };
 

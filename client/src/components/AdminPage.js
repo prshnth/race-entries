@@ -271,7 +271,13 @@ class AdminPage extends React.Component {
       ...this.state,
       selectedShow: {
         ...this.state.selectedShow,
-        draw: { ...this.state.selectedShow.draw, [participantId]: order },
+        draw: {
+          ...this.state.selectedShow.draw,
+          [this.state.selectedClass.id]: {
+            ...this.state.selectedShow.draw[this.state.selectedClass.id],
+            [participantId]: order,
+          },
+        },
       },
     });
   }
@@ -287,14 +293,14 @@ class AdminPage extends React.Component {
       showSuccessAlertOpen: true,
     });
     showRef
-      .update({ draw: selectedShow.draw })
+      .update({
+        [`draw.${this.state.selectedClass.id}`]: selectedShow.draw[
+          this.state.selectedClass.id
+        ],
+      })
       .then(() => {
         this.setState({
           ...this.state,
-          participants: _.sortBy(
-            this.state.participants,
-            (participant) => this.state.selectedShow.draw[participant.id]
-          ),
           drawDialogOpen: false,
           successToastMessage: 'Draw submitted successfully!',
         });

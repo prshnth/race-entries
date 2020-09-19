@@ -36,6 +36,9 @@ export default function ConfirmationForClass(props) {
     },
     inputOrder: {
       width: '20px',
+      '& input::-webkit-outer-spin-button, & input::-webkit-inner-spin-button': {
+        '-webkit-appearance': 'none',
+      },
     },
     wrapper: {
       position: 'relative',
@@ -67,7 +70,9 @@ export default function ConfirmationForClass(props) {
       )
       .sortBy(
         (participant) =>
-          !props.isAdmin && props.selectedShow.draw[participant.id]
+          !props.isAdmin &&
+          props.selectedShow.draw[props.selectedClass.id] &&
+          props.selectedShow.draw[props.selectedClass.id][participant.id]
       )
       .value();
   };
@@ -90,12 +95,23 @@ export default function ConfirmationForClass(props) {
   };
 
   const isSortDisabled = () => {
+    if (!props.selectedShow) return;
+    const participantsList = getParticipantsForClass();
     return (
-      props.selectedShow &&
-      (props.isSortLoading ||
-        _.some(props.selectedShow.draw, _.isEmpty) ||
-        _.chain(_.values(props.selectedShow.draw)).uniq().value().length !==
-          _.size(props.selectedShow.draw))
+      props.isSortLoading ||
+      participantsList.length !==
+        _.size(props.selectedShow.draw[props.selectedClass.id]) ||
+      _.some(
+        props.selectedShow.draw[props.selectedClass.id],
+        (sortOrder) =>
+          _.isEmpty(sortOrder) ||
+          sortOrder > participantsList.length ||
+          sortOrder < 1
+      ) ||
+      _.chain(_.values(props.selectedShow.draw[props.selectedClass.id]))
+        .uniq()
+        .value().length !==
+        _.size(props.selectedShow.draw[props.selectedClass.id])
     );
   };
 
@@ -161,9 +177,10 @@ export default function ConfirmationForClass(props) {
             >
               <TableHead>
                 <TableRow>
-                  {(props.isAdmin || !!_.size(props.selectedShow.draw)) && (
-                    <TableCell>Order</TableCell>
-                  )}
+                  {(props.isAdmin ||
+                    !_.isEmpty(
+                      props.selectedShow.draw[props.selectedClass.id]
+                    )) && <TableCell>Order</TableCell>}
                   <TableCell>Rider Name</TableCell>
                   <TableCell>Horse Name</TableCell>
                   <TableCell>Owner Name</TableCell>
@@ -176,15 +193,27 @@ export default function ConfirmationForClass(props) {
                       <TableCell component='th' scope='row'>
                         <TextField
                           className={classes.inputOrder}
-                          value={props.selectedShow.draw[participant.id]}
+                          type='number'
+                          value={
+                            props.selectedShow.draw[props.selectedClass.id] &&
+                            props.selectedShow.draw[props.selectedClass.id][
+                              participant.id
+                            ]
+                          }
                           onChange={(e) =>
                             props.setOrder(e.target.value, participant.id)
                           }
                         />
                       </TableCell>
-                    ) : !!_.size(props.selectedShow.draw) ? (
+                    ) : !_.isEmpty(
+                        props.selectedShow.draw[props.selectedClass.id]
+                      ) ? (
                       <TableCell>
-                        {props.selectedShow.draw[participant.id]}
+                        {
+                          props.selectedShow.draw[props.selectedClass.id][
+                            participant.id
+                          ]
+                        }
                       </TableCell>
                     ) : null}
                     <TableCell component='th' scope='row'>

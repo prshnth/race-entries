@@ -249,10 +249,16 @@ class LandingPage extends React.Component {
                               })
                             }
                             startIcon={
-                              _.size(show.draw) ? <Assignment /> : <HowToReg />
+                              _.isEmpty(show.draw[eachClass.id]) ? (
+                                <HowToReg />
+                              ) : (
+                                <Assignment />
+                              )
                             }
                           >
-                            {_.size(show.draw) ? 'Draw' : 'Confirmed'}
+                            {_.isEmpty(show.draw[eachClass.id])
+                              ? 'Confirmed'
+                              : 'Draw'}
                           </Button>
                         </Grid>
                       </Grid>
