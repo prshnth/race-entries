@@ -48,6 +48,7 @@ export default function CreateShowDialog(props) {
     },
     showTypeWrapper: {
       display: 'flex',
+      flexWrap: 'wrap',
       alignItems: 'center',
       justifyContent: 'space-between',
       marginBottom: 10,
