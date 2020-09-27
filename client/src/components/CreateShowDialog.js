@@ -9,7 +9,6 @@ import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogContentText from '@material-ui/core/DialogContentText';
 import DialogTitle from '@material-ui/core/DialogTitle';
-import InputLabel from '@material-ui/core/InputLabel';
 import MenuItem from '@material-ui/core/MenuItem';
 import Select from '@material-ui/core/Select';
 import FormControl from '@material-ui/core/FormControl';
@@ -18,6 +17,9 @@ import FormLabel from '@material-ui/core/FormLabel';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
 import Checkbox from '@material-ui/core/Checkbox';
 import CircularProgress from '@material-ui/core/CircularProgress';
+import PlusOneIcon from '@material-ui/icons/PlusOne';
+import IconButton from '@material-ui/core/IconButton';
+import DeleteIcon from '@material-ui/icons/Delete';
 import DateFnsUtils from '@date-io/date-fns';
 import {
   MuiPickersUtilsProvider,
@@ -44,15 +46,24 @@ export default function CreateShowDialog(props) {
       marginTop: -12,
       marginLeft: -12,
     },
+    showTypeWrapper: {
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      marginBottom: 10,
+    },
+    deleteIcon: {
+      marginLeft: 'auto',
+      padding: 0,
+    },
   }));
 
-  const classes = useStyles();
+  const styleClasses = useStyles();
   const initialState = () => {
     return {
       showName: '',
       showDate: new Date(),
-      totalClasses: 1,
-      classes: [{ name: '', id: null, hasSeniorWorldTour: false }],
+      classes: [{ name: '', id: uuidv4(), hasSeniorWorldTour: false }],
       availableClasses: [],
       draw: {},
     };
@@ -60,27 +71,49 @@ export default function CreateShowDialog(props) {
 
   const onDialogClose = () => {
     setState(initialState());
+    setCustomShow(false);
+    setStandardShowName('');
     props.handleCreateShowDialogClose();
   };
 
   const [state, setState] = React.useState(initialState());
-  const updateClassesCount = (e) => {
-    const initClasses = _.times(e.target.value, () => ({
-      name: '',
-      id: uuidv4(),
-      hasSeniorWorldTour: false,
-    }));
-    setState({ ...state, totalClasses: e.target.value, classes: initClasses });
+  const [selectedStandardShowName, setStandardShowName] = React.useState('');
+  const [isCustomShowSelected, setCustomShow] = React.useState(false);
+
+  const onStandardShowSelect = (name) => {
+    const {
+      showName,
+      classes,
+      availableClasses,
+      draw,
+    } = _.find(props.standardShows, { showName: name });
+    setState({
+      showName,
+      classes: _.map(classes, (eachClass) => ({ ...eachClass, id: uuidv4() })),
+      showDate: new Date(),
+      draw,
+      availableClasses,
+    });
+    setStandardShowName(name);
+    setCustomShow(false);
   };
 
-  const updateClass = (e, classIndex) => {
+  const onCustomShowSelect = () => {
+    setState(initialState());
+    setCustomShow(true);
+    setStandardShowName('');
+  };
+
+  const updateClass = (e, id) => {
     const value =
       e.target.type === 'checkbox' ? e.target.checked : e.target.value;
-    let allClasses = [...state.classes];
-    let currentClass = { ...allClasses[classIndex] };
-    currentClass[e.target.name] = value;
-    allClasses[classIndex] = currentClass;
-    setState({ ...state, classes: allClasses });
+    let classes = _.map(state.classes, (eachClass) => {
+      if (eachClass.id === id) {
+        return { ...eachClass, [e.target.name]: value };
+      }
+      return eachClass;
+    });
+    setState({ ...state, classes });
   };
 
   const updateField = (e) => {
@@ -89,6 +122,23 @@ export default function CreateShowDialog(props) {
     setState({
       ...state,
       [stateKey]: stateValue,
+    });
+  };
+
+  const onAddNewClass = () => {
+    setState({
+      ...state,
+      classes: [
+        ...state.classes,
+        { name: '', id: uuidv4(), hasSeniorWorldTour: false },
+      ],
+    });
+  };
+
+  const onDeleteClass = (id) => {
+    setState({
+      ...state,
+      classes: _.filter(state.classes, (eachClass) => eachClass.id !== id),
     });
   };
 
@@ -107,109 +157,150 @@ export default function CreateShowDialog(props) {
     >
       <DialogTitle id='form-dialog-title'>Create a New Show</DialogTitle>
       <DialogContent dividers>
-        <DialogContentText>Please fill out below information</DialogContentText>
+        <DialogContentText>
+          Please select a Show with Standard Classes or create a Custom Show
+        </DialogContentText>
         {props.error && (
           <Typography variant='subtitle1' display='inline' color='error'>
             {props.error}
           </Typography>
         )}
-        <TextField
-          autoFocus
-          required
-          margin='dense'
-          id='showName'
-          label='Show Name'
-          type='text'
-          variant='outlined'
-          fullWidth
-          name='showName'
-          value={state.showName}
-          onChange={updateField}
-        />
-        <MuiPickersUtilsProvider utils={DateFnsUtils}>
-          <KeyboardDatePicker
-            autoOk
-            disablePast
-            required
-            inputVariant='outlined'
-            margin='dense'
-            fullWidth
-            id='date-picker-dialog'
-            label='Show Date'
-            format='MM/dd/yyyy'
-            value={state.showDate}
-            name='showDate'
-            InputAdornmentProps={{ position: 'start' }}
-            onChange={updateField}
-            KeyboardButtonProps={{
-              'aria-label': 'change date',
-            }}
-          />
-        </MuiPickersUtilsProvider>
-        <FormControl variant='outlined' margin='dense'>
-          <InputLabel id='number-of-classes'>Classes</InputLabel>
-          <Select
-            labelId='class-list'
-            id='class-list-select'
-            value={state.totalClasses}
-            name='totalClasses'
-            onChange={updateClassesCount}
-            label='Classes'
+        <div className={styleClasses.showTypeWrapper}>
+          <FormControl variant='outlined' margin='dense'>
+            <Select
+              labelId='standard-show-label'
+              id='show-list-select'
+              displayEmpty
+              value={selectedStandardShowName}
+              name='standardShow'
+              onChange={(e) => onStandardShowSelect(e.target.value)}
+            >
+              <MenuItem value='' disabled>
+                Select a Show
+              </MenuItem>
+              {_.map(props.standardShows, (standardShow) => {
+                return (
+                  <MenuItem
+                    key={standardShow.showName}
+                    value={standardShow.showName}
+                  >
+                    {standardShow.showName}
+                  </MenuItem>
+                );
+              })}
+            </Select>
+          </FormControl>
+          <Button
+            variant='contained'
+            size='medium'
+            onClick={() => onCustomShowSelect()}
+            color='primary'
           >
-            {_.times(5).map((val) => {
-              const item = val + 1;
+            Create Custom Show
+          </Button>
+        </div>
+        {!!selectedStandardShowName || isCustomShowSelected ? (
+          <div>
+            <TextField
+              autoFocus
+              required
+              margin='dense'
+              id='showName'
+              label='Show Name'
+              type='text'
+              variant='outlined'
+              fullWidth
+              name='showName'
+              value={state.showName}
+              onChange={updateField}
+            />
+            <MuiPickersUtilsProvider utils={DateFnsUtils}>
+              <KeyboardDatePicker
+                autoOk
+                disablePast
+                required
+                inputVariant='outlined'
+                margin='dense'
+                fullWidth
+                id='date-picker-dialog'
+                label='Show Date'
+                format='MM/dd/yyyy'
+                value={state.showDate}
+                name='showDate'
+                InputAdornmentProps={{ position: 'start' }}
+                onChange={updateField}
+                KeyboardButtonProps={{
+                  'aria-label': 'change date',
+                }}
+              />
+            </MuiPickersUtilsProvider>
+            {_.map(state.classes, (showClass, classIndex) => {
               return (
-                <MenuItem key={item} value={item}>
-                  {item}
-                </MenuItem>
+                <Box
+                  key={classIndex}
+                  display='flex'
+                  flexDirection='column'
+                  border={1}
+                  boxSizing='border-box'
+                  borderRadius={4}
+                  borderColor='grey.400'
+                  className={styleClasses.classBox}
+                >
+                  <TextField
+                    required
+                    margin='dense'
+                    id={`className.${classIndex}`}
+                    label='Class Name'
+                    type='text'
+                    variant='outlined'
+                    fullWidth
+                    name='name'
+                    value={showClass.name}
+                    onChange={(e) => updateClass(e, showClass.id)}
+                  />
+                  <FormControl component='fieldset' margin='dense'>
+                    <FormLabel component='legend'>
+                      Senior World Tour Eligible?
+                    </FormLabel>
+                    <FormGroup aria-label='position' row>
+                      <FormControlLabel
+                        control={
+                          <Checkbox
+                            checked={showClass.hasSeniorWorldTour}
+                            onChange={(e) => updateClass(e, showClass.id)}
+                            color='primary'
+                            name='hasSeniorWorldTour'
+                          />
+                        }
+                        label='Yes'
+                        labelPlacement='end'
+                      />
+                    </FormGroup>
+                  </FormControl>
+                  {state.classes.length > 1 ? (
+                    <IconButton
+                      aria-label='delete-class'
+                      color='secondary'
+                      onClick={() => onDeleteClass(showClass.id)}
+                      className={styleClasses.deleteIcon}
+                    >
+                      <DeleteIcon />
+                    </IconButton>
+                  ) : null}
+                </Box>
               );
             })}
-          </Select>
-        </FormControl>
-        {_.times(state.totalClasses).map((classIndex) => {
-          return (
-            <Box
-              key={classIndex}
-              border={1}
-              boxSizing='border-box'
-              borderRadius={4}
-              borderColor='grey.400'
-              className={classes.classBox}
+            <Button
+              variant='outlined'
+              size='medium'
+              color='primary'
+              onClick={onAddNewClass}
+              startIcon={<PlusOneIcon />}
             >
-              <TextField
-                required
-                margin='dense'
-                id={`className.${classIndex}`}
-                label='Class Name'
-                type='text'
-                variant='outlined'
-                fullWidth
-                name='name'
-                value={state.classes[classIndex].name}
-                onChange={(e) => updateClass(e, classIndex)}
-              />
-              <FormControl component='fieldset' margin='dense'>
-                <FormLabel component='legend'>
-                  Senior World Tour Eligible?
-                </FormLabel>
-                <FormGroup aria-label='position' row>
-                  <FormControlLabel
-                    control={
-                      <Checkbox
-                        checked={state.classes[classIndex].hasSeniorWorldTour}
-                        onChange={(e) => updateClass(e, classIndex)}
-                        color='primary'
-                        name='hasSeniorWorldTour'
-                      />
-                    }
-                    label='Yes'
-                    labelPlacement='end'
-                  />
-                </FormGroup>
-              </FormControl>
-            </Box>
-          );
-        })}
+              Add another Class
+            </Button>
+          </div>
+        ) : null}
       </DialogContent>
       <DialogActions>
         <Button
@@ -220,7 +311,7 @@ export default function CreateShowDialog(props) {
         >
           Cancel
         </Button>
-        <div className={classes.wrapper}>
+        <div className={styleClasses.wrapper}>
           <Button
             variant='contained'
             size='small'
@@ -231,7 +322,10 @@ export default function CreateShowDialog(props) {
             Submit
           </Button>
           {props.isShowCreating && (
-            <CircularProgress size={24} className={classes.buttonProgress} />
+            <CircularProgress
+              size={24}
+              className={styleClasses.buttonProgress}
+            />
           )}
         </div>
       </DialogActions>

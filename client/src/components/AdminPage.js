@@ -18,10 +18,12 @@ import Snackbar from '@material-ui/core/Snackbar';
 import { makeStyles } from '@material-ui/core/styles';
 import PanToolIcon from '@material-ui/icons/PanTool';
 import PlayArrowIcon from '@material-ui/icons/PlayArrow';
+import Register from '@material-ui/icons/GroupAdd';
 import { compose } from 'recompose';
 import CreateShowDialog from './CreateShowDialog';
 import AccountSettingsDialog from './AccountSettingsDialog';
 import ConfirmationForClass from './ConfirmationForClass';
+import RegisterForClass from './RegisterForClass';
 import _ from 'lodash';
 
 const withStyles = (Component) => (props) => {
@@ -67,6 +69,7 @@ const ShowList = ({
   firebase,
   isPrevious,
   setSelectedClassState,
+  onRegisterClick,
 }) => {
   const setClassState = (show, selectedClass) => {
     const operationType = _.includes(show.availableClasses, selectedClass.name)
@@ -98,6 +101,16 @@ const ShowList = ({
                   <Typography variant='subtitle2' color='textSecondary' noWrap>
                     {eachClass.name}
                   </Typography>
+                  <Button
+                    variant='outlined'
+                    size='small'
+                    color='primary'
+                    className={classes.button}
+                    onClick={() => onRegisterClick(eachClass)}
+                    startIcon={<Register />}
+                  >
+                    Enter
+                  </Button>
                   <Button
                     variant='outlined'
                     color='primary'
@@ -143,15 +156,18 @@ class AdminPage extends React.Component {
     this.state = {
       loading: false,
       shows: [],
+      standardShows: [],
       participants: [],
       createShowDialogOpen: false,
       showSuccessAlertOpen: false,
       accountSettingsDialog: false,
+      registerDialogOpen: false,
       isShowCreating: false,
       drawDialogOpen: false,
       selectedShow: null,
       selectedClass: null,
       isSortLoading: false,
+      isRegistering: false,
       successToastMessage: '',
     };
   }
@@ -179,11 +195,22 @@ class AdminPage extends React.Component {
         });
         this.setState({ ...this.state, shows, loading: false });
       });
+    this.standardShowsListener = this.props.firebase.db
+      .collection('standardShows')
+      .onSnapshot((snapshot) => {
+        const standardShows = snapshot.docs.map((show) => {
+          return {
+            ...show.data(),
+          };
+        });
+        this.setState({ ...this.state, standardShows });
+      });
   }
 
   componentWillUnmount() {
     this.participantsListener();
     this.showsListener();
+    this.standardShowsListener();
   }
 
   onDialogClose(openedDialogType) {
@@ -310,6 +337,35 @@ class AdminPage extends React.Component {
       });
   }
 
+  onSubmitRegistration(participantInfo) {
+    this.setState({ ...this.state, isRegistering: true });
+    this.props.firebase.db
+      .collection('participants')
+      .add({
+        ...participantInfo,
+        participationDate: this.state.selectedShow.showDate,
+        participatingShow: this.state.selectedShow.showName,
+        participationShowId: this.state.selectedShow.id,
+        participationClass: this.state.selectedClass.name,
+      })
+      .then(() => {
+        this.setState({
+          ...this.state,
+          registerDialogOpen: false,
+          isRegistering: false,
+          showSuccessAlertOpen: true,
+          successToastMessage: 'Registration Successful!',
+        });
+      })
+      .catch((error) => {
+        this.setState({
+          ...this.state,
+          error: error,
+          isRegistering: false,
+        });
+      });
+  }
+
   render() {
     const availableShows = this.getAvailableShows();
     const previousShows = this.getPreviousShows();
@@ -318,6 +374,7 @@ class AdminPage extends React.Component {
       <Container className={this.props.classes.container}>
         <CreateShowDialog
           open={this.state.createShowDialogOpen}
+          standardShows={this.state.standardShows}
           handleCreateShowDialogClose={() =>
             this.onDialogClose('createShowDialogOpen')
           }
@@ -333,6 +390,17 @@ class AdminPage extends React.Component {
             this.onDialogClose('accountSettingsDialog')
           }
           firebase={this.props.firebase}
+        />
+        <RegisterForClass
+          open={this.state.registerDialogOpen}
+          handleRegisterDialogClose={() =>
+            this.onDialogClose('registerDialogOpen')
+          }
+          submitRegistration={(participantInfo) =>
+            this.onSubmitRegistration(participantInfo)
+          }
+          selectedClass={this.state.selectedClass}
+          isRegistering={this.state.isRegistering}
         />
         <ConfirmationForClass
           handleConfirmationDialogClose={() =>
@@ -400,6 +468,14 @@ class AdminPage extends React.Component {
               firebase={this.props.firebase}
               setSelectedClassState={(selectedShow, selectedClass) =>
                 this.setSelectedClassState(selectedShow, selectedClass)
+              }
+              onRegisterClick={(eachClass) =>
+                this.setState({
+                  ...this.state,
+                  registerDialogOpen: true,
+                  selectedShow: show,
+                  selectedClass: eachClass,
+                })
               }
             />
           ))
